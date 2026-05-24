@@ -1,5 +1,6 @@
 baseURL = 'https://blog.jiaxv.top/'
-locale = 'zh-CN'
+locale = 'zh-cn'
+defaultContentLanguage = 'zh-cn'
 title = '我的思维宇宙'
 theme = 'PaperMod'
 
