@@ -1,0 +1,19 @@
+baseURL = 'https://blog.jiaxv.top/'
+locale = 'zh-CN'
+title = '我的思维宇宙'
+theme = 'PaperMod'
+
+[menu]
+  [[menu.main]]
+    identifier = 'archives'
+    name = '归档'
+    url = '/archives/'
+    weight = 10
+  [[menu.main]]
+    identifier = 'tags'
+    name = '标签'
+    url = '/tags/'
+    weight = 20
+
+[params]
+  comments = true
