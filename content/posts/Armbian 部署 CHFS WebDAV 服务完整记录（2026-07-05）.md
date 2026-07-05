@@ -1,3 +1,9 @@
+---
+title: "Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05）"
+date: 2026-07-05
+draft: false
+---
+
 # Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05）
 
 ## 一、部署目标
