@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>技术记录 on 我的思维宇宙</title>
+    <link>https://blog.jiaxv.top/categories/%E6%8A%80%E6%9C%AF%E8%AE%B0%E5%BD%95/</link>
+    <description>Recent content in 技术记录 on 我的思维宇宙</description>
+    <generator>Hugo</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 24 May 2026 23:59:59 +0800</lastBuildDate>
+    <atom:link href="https://blog.jiaxv.top/categories/%E6%8A%80%E6%9C%AF%E8%AE%B0%E5%BD%95/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>2026年5月24日 N1博客搭建总结</title>
+      <link>https://blog.jiaxv.top/posts/n1-%E9%85%8D%E7%BD%AE%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E8%AE%B0%E5%BD%95/</link>
+      <pubDate>Sun, 24 May 2026 23:59:59 +0800</pubDate>
+      <guid>https://blog.jiaxv.top/posts/n1-%E9%85%8D%E7%BD%AE%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E8%AE%B0%E5%BD%95/</guid>
+      <description>&lt;h2 id=&#34;-斐讯n1-博客搭建工作记录&#34;&gt;📋 斐讯N1 博客搭建工作记录&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;日期&lt;/strong&gt;：2026年5月24日&lt;br&gt;
+&lt;strong&gt;操作用户&lt;/strong&gt;：jiaxf&lt;br&gt;
+&lt;strong&gt;核心目标&lt;/strong&gt;：在 N1 上搭建 Hugo 静态博客，部署到腾讯云 EdgeOne Pages，配置评论系统和远程写作环境&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;一hugo-博客本地搭建&#34;&gt;一、Hugo 博客本地搭建&lt;/h3&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;项目&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;操作摘要&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;备注&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;安装 Hugo&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;APT 安装旧版后，手动下载 &lt;code&gt;hugo_0.161.1_linux-arm64.deb&lt;/code&gt; 升级&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;因 GitHub 下载慢，通过代理解决&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;创建博客&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;hugo new site blog&lt;/code&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;目录：&lt;code&gt;/home/jiaxf/blog&lt;/code&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;配置主题&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;使用 PaperMod 主题，&lt;code&gt;git submodule add&lt;/code&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;兼容 Hugo ≥ 0.146.0&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;修复警告&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;languageCode&lt;/code&gt; → &lt;code&gt;locale&lt;/code&gt;，&lt;code&gt;zh-CN&lt;/code&gt; → &lt;code&gt;zh-cn&lt;/code&gt;（全小写）&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;Hugo v0.158+ 的变更&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;第一篇文章&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;content/posts/hello-world.md&lt;/code&gt;&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;需将 &lt;code&gt;draft: true&lt;/code&gt; 改为 &lt;code&gt;false&lt;/code&gt; 才能发布&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;关键技术点&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Hugo 是“一次性”生成工具，不是常驻后台进程，运行时几乎不消耗 N1 资源&lt;/li&gt;
+&lt;li&gt;新文章默认为草稿，部署时需去掉 &lt;code&gt;draft: true&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;二github-仓库与推送&#34;&gt;二、GitHub 仓库与推送&lt;/h3&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;项目&lt;/th&gt;
+          &lt;th style=&#34;text-align: left&#34;&gt;详情&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;仓库地址&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;git@github.com:jiaxv/myblog.git&lt;/code&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;推送方式&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;SSH（使用 N1 上的 &lt;code&gt;id_ed25519&lt;/code&gt; 密钥）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;用户配置&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;git config --global user.name/email&lt;/code&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;初始提交&lt;/td&gt;
+          &lt;td style=&#34;text-align: left&#34;&gt;&lt;code&gt;git commit -m &amp;quot;初始化博客&amp;quot;&lt;/code&gt; 并推送成功&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;问题与解决&lt;/strong&gt;：&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

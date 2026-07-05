@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>我的思维宇宙</title>
+<meta name="keywords" content="">
+<meta name="description" content="Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05）
+一、部署目标
+在 N1 盒子（Armbian 系统）上搭建 WebDAV 服务，作为个人文件存储和同步中心，支持：
+
+
+浏览器 Web 界面访问
+
+
+Windows 映射网络驱动器
+
+
+Android 客户端（Voyager）连接
+
+
+通过 Tailscale 实现远程安全访问
+
+
+
+二、环境信息
+
+  
+      
+          项目
+          详情
+      
+  
+  
+      
+          主机
+          N1 盒子
+      
+      
+          系统
+          Armbian（基于 Debian）
+      
+      
+          架构
+          ARM64 (aarch64)
+      
+      
+          用户
+          jiaxf
+      
+      
+          共享目录
+          /home/jiaxf
+      
+      
+          服务端口
+          8080
+      
+      
+          内网 IP
+          192.168.1.254
+      
+      
+          Tailscale IP
+          100.126.205.77
+      
+      
+          MagicDNS
+          armbian.elf-tint.ts.net
+      
+  
+
+
+三、CHFS 版本选择
+最终选定版本：CHFS 1.1
+版本演进过程
+
+
+最初尝试 CHFS 3.1，虽然支持 --webdav 参数，但 Web 界面登录存在异常（登录按钮无反应），且对客户端兼容性不佳。
+
+
+降级至 CHFS 1.1 后，所有功能正常：
+
+
+浏览器 Web 界面登录正常工作。
+
+
+Windows 映射网络驱动器成功。
+
+
+Android Voyager 正常连接。">
+<meta name="author" content="">
+<link rel="canonical" href="https://blog.jiaxv.top/posts/armbian-%E9%83%A8%E7%BD%B2-chfs-webdav-%E6%9C%8D%E5%8A%A1%E5%AE%8C%E6%95%B4%E8%AE%B0%E5%BD%952026-07-05/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://blog.jiaxv.top/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://blog.jiaxv.top/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://blog.jiaxv.top/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://blog.jiaxv.top/apple-touch-icon.png">
+<link rel="mask-icon" href="https://blog.jiaxv.top/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh-cn" href="https://blog.jiaxv.top/posts/armbian-%E9%83%A8%E7%BD%B2-chfs-webdav-%E6%9C%8D%E5%8A%A1%E5%AE%8C%E6%95%B4%E8%AE%B0%E5%BD%952026-07-05/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://blog.jiaxv.top/posts/armbian-%E9%83%A8%E7%BD%B2-chfs-webdav-%E6%9C%8D%E5%8A%A1%E5%AE%8C%E6%95%B4%E8%AE%B0%E5%BD%952026-07-05/">
+  <meta property="og:site_name" content="我的思维宇宙">
+  <meta property="og:title" content="我的思维宇宙">
+  <meta property="og:description" content="Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05） 一、部署目标 在 N1 盒子（Armbian 系统）上搭建 WebDAV 服务，作为个人文件存储和同步中心，支持：
+浏览器 Web 界面访问
+Windows 映射网络驱动器
+Android 客户端（Voyager）连接
+通过 Tailscale 实现远程安全访问
+二、环境信息 项目 详情 主机 N1 盒子 系统 Armbian（基于 Debian） 架构 ARM64 (aarch64) 用户 jiaxf 共享目录 /home/jiaxf 服务端口 8080 内网 IP 192.168.1.254 Tailscale IP 100.126.205.77 MagicDNS armbian.elf-tint.ts.net 三、CHFS 版本选择 最终选定版本：CHFS 1.1
+版本演进过程 最初尝试 CHFS 3.1，虽然支持 --webdav 参数，但 Web 界面登录存在异常（登录按钮无反应），且对客户端兼容性不佳。
+降级至 CHFS 1.1 后，所有功能正常：
+浏览器 Web 界面登录正常工作。
+Windows 映射网络驱动器成功。
+Android Voyager 正常连接。">
+  <meta property="og:locale" content="zh_cn">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="我的思维宇宙">
+  <meta name="twitter:description" content="Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05） 一、部署目标 在 N1 盒子（Armbian 系统）上搭建 WebDAV 服务，作为个人文件存储和同步中心，支持：
+浏览器 Web 界面访问
+Windows 映射网络驱动器
+Android 客户端（Voyager）连接
+通过 Tailscale 实现远程安全访问
+二、环境信息 项目 详情 主机 N1 盒子 系统 Armbian（基于 Debian） 架构 ARM64 (aarch64) 用户 jiaxf 共享目录 /home/jiaxf 服务端口 8080 内网 IP 192.168.1.254 Tailscale IP 100.126.205.77 MagicDNS armbian.elf-tint.ts.net 三、CHFS 版本选择 最终选定版本：CHFS 1.1
+版本演进过程 最初尝试 CHFS 3.1，虽然支持 --webdav 参数，但 Web 界面登录存在异常（登录按钮无反应），且对客户端兼容性不佳。
+降级至 CHFS 1.1 后，所有功能正常：
+浏览器 Web 界面登录正常工作。
+Windows 映射网络驱动器成功。
+Android Voyager 正常连接。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://blog.jiaxv.top/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "",
+      "item": "https://blog.jiaxv.top/posts/armbian-%E9%83%A8%E7%BD%B2-chfs-webdav-%E6%9C%8D%E5%8A%A1%E5%AE%8C%E6%95%B4%E8%AE%B0%E5%BD%952026-07-05/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "",
+  "name": "",
+  "description": "Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05） 一、部署目标 在 N1 盒子（Armbian 系统）上搭建 WebDAV 服务，作为个人文件存储和同步中心，支持：\n浏览器 Web 界面访问\nWindows 映射网络驱动器\nAndroid 客户端（Voyager）连接\n通过 Tailscale 实现远程安全访问\n二、环境信息 项目 详情 主机 N1 盒子 系统 Armbian（基于 Debian） 架构 ARM64 (aarch64) 用户 jiaxf 共享目录 /home/jiaxf 服务端口 8080 内网 IP 192.168.1.254 Tailscale IP 100.126.205.77 MagicDNS armbian.elf-tint.ts.net 三、CHFS 版本选择 最终选定版本：CHFS 1.1\n版本演进过程 最初尝试 CHFS 3.1，虽然支持 --webdav 参数，但 Web 界面登录存在异常（登录按钮无反应），且对客户端兼容性不佳。\n降级至 CHFS 1.1 后，所有功能正常：\n浏览器 Web 界面登录正常工作。\nWindows 映射网络驱动器成功。\nAndroid Voyager 正常连接。\n",
+  "keywords": [
+    
+  ],
+  "articleBody": "Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05） 一、部署目标 在 N1 盒子（Armbian 系统）上搭建 WebDAV 服务，作为个人文件存储和同步中心，支持：\n浏览器 Web 界面访问\nWindows 映射网络驱动器\nAndroid 客户端（Voyager）连接\n通过 Tailscale 实现远程安全访问\n二、环境信息 项目 详情 主机 N1 盒子 系统 Armbian（基于 Debian） 架构 ARM64 (aarch64) 用户 jiaxf 共享目录 /home/jiaxf 服务端口 8080 内网 IP 192.168.1.254 Tailscale IP 100.126.205.77 MagicDNS armbian.elf-tint.ts.net 三、CHFS 版本选择 最终选定版本：CHFS 1.1\n版本演进过程 最初尝试 CHFS 3.1，虽然支持 --webdav 参数，但 Web 界面登录存在异常（登录按钮无反应），且对客户端兼容性不佳。\n降级至 CHFS 1.1 后，所有功能正常：\n浏览器 Web 界面登录正常工作。\nWindows 映射网络驱动器成功。\nAndroid Voyager 正常连接。\nWebDAV 协议支持稳定。\n四、安装步骤 1. 下载 CHFS 1.1（ARM64） bash\ncd /tmp wget http://iscute.cn/tar/chfs/1.1/chfs-linux-arm64-1.1.zip unzip -o chfs-linux-arm64-1.1.zip -d /usr/local/bin chmod 500 /usr/local/bin/chfs\n2. 验证版本 bash\n/usr/local/bin/chfs -version\n输出应显示 1.1 五、服务配置 1. systemd 服务文件 路径：/etc/systemd/system/chfs.service\nini\n[Unit] Description=chfs WebDAV Server After=network.target [Service] User=root Type=simple ExecStart=/usr/local/bin/chfs –path=\"/home/jiaxf\" –port=8080 –rule=\"::|admin:nimda:RWD\" Restart=on-failure [Install] WantedBy=multi-user.target\n参数说明：\n--path：共享目录路径（使用双引号包裹）。\n--port：监听端口。\n--rule：访问控制规则。\n:: 表示禁止匿名访问。\n| 为分隔符。\nadmin:nimda:RWD 定义用户 admin，密码 nimda，拥有读写删（RWD）权限。\n若希望浏览器访问时无需登录即可查看文件（只读），可将规则改为 admin:nimda:RWD（去掉 ::|），但登录切换功能可能受影响。\n2. 启动与自启 bash\nsudo systemctl daemon-reload sudo systemctl start chfs sudo systemctl enable chfs sudo systemctl status chfs # 确认状态为 active (running)\n3. 验证监听 bash\nsudo ss -tulpn | grep 8080\n应显示 chfs 监听在 *:8080 六、WebDAV 端点说明 CHFS 的 WebDAV 服务端点位于 /webdav 子路径：\n用途 地址 浏览器 Web 界面 http://IP:8080/ WebDAV 客户端连接 http://IP:8080/webdav 重要：客户端必须使用包含 /webdav 的完整地址，否则会返回 405 Method Not Allowed。\n七、客户端连接方法 1. 浏览器访问（任意设备） 访问 http://100.126.205.77:8080 或 http://armbian.elf-tint.ts.net:8080\n页面加载后，点击 “登录” 按钮，输入用户名 admin，密码 nimda。\n登录成功后即可浏览、上传、下载文件。\n若规则为 ::|admin:nimda:RWD，访问时页面为空，登录后显示文件列表。\n若清除浏览器缓存后登录按钮无反应，请使用无痕模式或重启浏览器。\n2. Windows 映射网络驱动器 前提：Windows 默认禁用 HTTP 基本认证，需修改注册表。\n步骤： 修改注册表\n按 Win+R，输入 regedit，定位到：\nHKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\WebClient\\Parameters\n将 BasicAuthLevel 的值改为 2（允许 HTTP 基本认证）。\n重启 WebClient 服务\n按 Win+R，输入 services.msc，找到 WebClient，右键“重新启动”。 映射网络驱动器\n打开“此电脑” → “映射网络驱动器”。\n文件夹地址：http://armbian.elf-tint.ts.net:8080/webdav（或使用 IP）。\n勾选“使用其他凭据连接”，点击完成。\n输入用户名 admin，密码 nimda，并勾选“记住我的凭据”。\n完成后，即可在“此电脑”看到新盘符，像本地磁盘一样操作。\n3. Android 客户端（Voyager） 在 Voyager 中添加新连接，填写以下信息：\n字段 填写内容 协议 WebDAV Host armbian.elf-tint.ts.net 或 100.126.205.77 Port 8080 Remote Path /webdav Username admin Password nimda 若 Voyager 不支持单独设置 Remote Path，可将 Host 填为 armbian.elf-tint.ts.net/webdav，端口仍填 8080。\n其他推荐客户端：Solid Explorer、CX 文件管理器。\n八、常见问题与解决方案 问题现象 原因 解决方法 浏览器访问根路径显示空页面，登录按钮无反应 浏览器缓存了旧会话/Cookie 清除浏览器缓存和 Cookie，或使用无痕模式 浏览器访问 /webdav 返回 405 Method Not Allowed /webdav 是 WebDAV 端点，不支持浏览器 GET 请求 这是正常现象，客户端使用 PROPFIND 方法访问即可 Windows 映射失败，提示“网络错误” 未修改注册表或未重启 WebClient 服务 按第七节步骤修改注册表并重启服务 Voyager 连接失败（即使设置了 Remote Path） Voyager 可能忽略 Remote Path 字段 将路径合并到 Host 中，如 armbian.elf-tint.ts.net/webdav 升级到 CHFS 3.1 后 --webdav 参数不识别 下载的版本不对，或参数格式错误 降级回 1.1 版本，稳定可靠 登录后仍无法上传文件 规则中未给用户写入权限 确保规则为 admin:nimda:RWD（包含 W 和 D） 九、最终确认状态 CHFS 1.1 服务正常运行，监听 8080 端口\nsystemd 服务已启用，开机自启\n浏览器可访问 Web 界面，登录正常\nWindows 映射网络驱动器成功\nAndroid Voyager 正常连接\nTailscale 远程访问正常（域名和 IP 均可）\n十、参考命令速查 bash\n服务管理 sudo systemctl start chfs sudo systemctl stop chfs sudo systemctl restart chfs sudo systemctl status chfs\n查看日志 sudo journalctl -u chfs -f\n测试 WebDAV（curl） curl -u admin:nimda -X PROPFIND http://127.0.0.1:8080/webdav -H “Depth: 1”\n查看版本 /usr/local/bin/chfs -version\n查看端口监听 sudo ss -tulpn | grep 8080\nTailscale 信息 tailscale ip tailscale status\n文档结束\n记录日期：2026-07-05\n部署者：jiaxf\n",
+  "wordCount" : "417",
+  "inLanguage": "zh-cn",
+  "datePublished": "0001-01-01T00:00:00Z",
+  "dateModified": "0001-01-01T00:00:00Z",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://blog.jiaxv.top/posts/armbian-%E9%83%A8%E7%BD%B2-chfs-webdav-%E6%9C%8D%E5%8A%A1%E5%AE%8C%E6%95%B4%E8%AE%B0%E5%BD%952026-07-05/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "我的思维宇宙",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://blog.jiaxv.top/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://blog.jiaxv.top/" accesskey="h" title="我的思维宇宙 (Alt + H)">我的思维宇宙</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://blog.jiaxv.top/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://blog.jiaxv.top/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      
+    </h1>
+    <div class="post-meta">
+
+
+
+</div>
+  </header> 
+  <div class="post-content md-content"><h1 id="armbian-部署-chfs-webdav-服务完整记录2026-07-05">Armbian 部署 CHFS WebDAV 服务完整记录（2026-07-05）<a hidden class="anchor" aria-hidden="true" href="#armbian-部署-chfs-webdav-服务完整记录2026-07-05">#</a></h1>
+<h2 id="一部署目标">一、部署目标<a hidden class="anchor" aria-hidden="true" href="#一部署目标">#</a></h2>
+<p>在 N1 盒子（Armbian 系统）上搭建 WebDAV 服务，作为个人文件存储和同步中心，支持：</p>
+<ul>
+<li>
+<p>浏览器 Web 界面访问</p>
+</li>
+<li>
+<p>Windows 映射网络驱动器</p>
+</li>
+<li>
+<p>Android 客户端（Voyager）连接</p>
+</li>
+<li>
+<p>通过 Tailscale 实现远程安全访问</p>
+</li>
+</ul>
+<hr>
+<h2 id="二环境信息">二、环境信息<a hidden class="anchor" aria-hidden="true" href="#二环境信息">#</a></h2>
+<table>
+  <thead>
+      <tr>
+          <th>项目</th>
+          <th>详情</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>主机</td>
+          <td>N1 盒子</td>
+      </tr>
+      <tr>
+          <td>系统</td>
+          <td>Armbian（基于 Debian）</td>
+      </tr>
+      <tr>
+          <td>架构</td>
+          <td>ARM64 (aarch64)</td>
+      </tr>
+      <tr>
+          <td>用户</td>
+          <td>jiaxf</td>
+      </tr>
+      <tr>
+          <td>共享目录</td>
+          <td><code>/home/jiaxf</code></td>
+      </tr>
+      <tr>
+          <td>服务端口</td>
+          <td>8080</td>
+      </tr>
+      <tr>
+          <td>内网 IP</td>
+          <td>192.168.1.254</td>
+      </tr>
+      <tr>
+          <td>Tailscale IP</td>
+          <td>100.126.205.77</td>
+      </tr>
+      <tr>
+          <td>MagicDNS</td>
+          <td><a href="https://armbian.elf-tint.ts.net/">armbian.elf-tint.ts.net</a></td>
+      </tr>
+  </tbody>
+</table>
+<hr>
+<h2 id="三chfs-版本选择">三、CHFS 版本选择<a hidden class="anchor" aria-hidden="true" href="#三chfs-版本选择">#</a></h2>
+<p><strong>最终选定版本：CHFS 1.1</strong></p>
+<h3 id="版本演进过程">版本演进过程<a hidden class="anchor" aria-hidden="true" href="#版本演进过程">#</a></h3>
+<ul>
+<li>
+<p>最初尝试 CHFS 3.1，虽然支持 <code>--webdav</code> 参数，但 Web 界面登录存在异常（登录按钮无反应），且对客户端兼容性不佳。</p>
+</li>
+<li>
+<p>降级至 <strong>CHFS 1.1</strong> 后，所有功能正常：</p>
+<ul>
+<li>
+<p>浏览器 Web 界面登录正常工作。</p>
+</li>
+<li>
+<p>Windows 映射网络驱动器成功。</p>
+</li>
+<li>
+<p>Android Voyager 正常连接。</p>
+</li>
+<li>
+<p>WebDAV 协议支持稳定。</p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="四安装步骤">四、安装步骤<a hidden class="anchor" aria-hidden="true" href="#四安装步骤">#</a></h2>
+<h3 id="1-下载-chfs-11arm64">1. 下载 CHFS 1.1（ARM64）<a hidden class="anchor" aria-hidden="true" href="#1-下载-chfs-11arm64">#</a></h3>
+<p>bash</p>
+<p>cd /tmp
+wget <a href="http://iscute.cn/tar/chfs/1.1/chfs-linux-arm64-1.1.zip">http://iscute.cn/tar/chfs/1.1/chfs-linux-arm64-1.1.zip</a>
+unzip -o chfs-linux-arm64-1.1.zip -d /usr/local/bin
+chmod 500 /usr/local/bin/chfs</p>
+<h3 id="2-验证版本">2. 验证版本<a hidden class="anchor" aria-hidden="true" href="#2-验证版本">#</a></h3>
+<p>bash</p>
+<p>/usr/local/bin/chfs -version</p>
+<h1 id="输出应显示-11">输出应显示 1.1<a hidden class="anchor" aria-hidden="true" href="#输出应显示-11">#</a></h1>
+<hr>
+<h2 id="五服务配置">五、服务配置<a hidden class="anchor" aria-hidden="true" href="#五服务配置">#</a></h2>
+<h3 id="1-systemd-服务文件">1. systemd 服务文件<a hidden class="anchor" aria-hidden="true" href="#1-systemd-服务文件">#</a></h3>
+<p>路径：<code>/etc/systemd/system/chfs.service</code></p>
+<p>ini</p>
+<p>[Unit]
+Description=chfs WebDAV Server
+After=network.target
+[Service]
+User=root
+Type=simple
+ExecStart=/usr/local/bin/chfs &ndash;path=&quot;/home/jiaxf&quot; &ndash;port=8080 &ndash;rule=&quot;::|admin:nimda:RWD&quot;
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target</p>
+<p><strong>参数说明</strong>：</p>
+<ul>
+<li>
+<p><code>--path</code>：共享目录路径（使用双引号包裹）。</p>
+</li>
+<li>
+<p><code>--port</code>：监听端口。</p>
+</li>
+<li>
+<p><code>--rule</code>：访问控制规则。</p>
+<ul>
+<li>
+<p><code>::</code> 表示禁止匿名访问。</p>
+</li>
+<li>
+<p><code>|</code> 为分隔符。</p>
+</li>
+<li>
+<p><code>admin:nimda:RWD</code> 定义用户 <code>admin</code>，密码 <code>nimda</code>，拥有读写删（RWD）权限。</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>若希望浏览器访问时无需登录即可查看文件（只读），可将规则改为 <code>admin:nimda:RWD</code>（去掉 <code>::|</code>），但登录切换功能可能受影响。</p>
+</blockquote>
+<h3 id="2-启动与自启">2. 启动与自启<a hidden class="anchor" aria-hidden="true" href="#2-启动与自启">#</a></h3>
+<p>bash</p>
+<p>sudo systemctl daemon-reload
+sudo systemctl start chfs
+sudo systemctl enable chfs
+sudo systemctl status chfs   # 确认状态为 active (running)</p>
+<h3 id="3-验证监听">3. 验证监听<a hidden class="anchor" aria-hidden="true" href="#3-验证监听">#</a></h3>
+<p>bash</p>
+<p>sudo ss -tulpn | grep 8080</p>
+<h1 id="应显示-chfs-监听在-8080">应显示 chfs 监听在 *:8080<a hidden class="anchor" aria-hidden="true" href="#应显示-chfs-监听在-8080">#</a></h1>
+<hr>
+<h2 id="六webdav-端点说明">六、WebDAV 端点说明<a hidden class="anchor" aria-hidden="true" href="#六webdav-端点说明">#</a></h2>
+<p>CHFS 的 WebDAV 服务端点位于 <strong><code>/webdav</code></strong> 子路径：</p>
+<table>
+  <thead>
+      <tr>
+          <th>用途</th>
+          <th>地址</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>浏览器 Web 界面</td>
+          <td><code>http://IP:8080/</code></td>
+      </tr>
+      <tr>
+          <td>WebDAV 客户端连接</td>
+          <td><code>http://IP:8080/webdav</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><strong>重要</strong>：客户端必须使用包含 <code>/webdav</code> 的完整地址，否则会返回 <code>405 Method Not Allowed</code>。</p>
+<hr>
+<h2 id="七客户端连接方法">七、客户端连接方法<a hidden class="anchor" aria-hidden="true" href="#七客户端连接方法">#</a></h2>
+<h3 id="1-浏览器访问任意设备">1. 浏览器访问（任意设备）<a hidden class="anchor" aria-hidden="true" href="#1-浏览器访问任意设备">#</a></h3>
+<ul>
+<li>
+<p>访问 <code>http://100.126.205.77:8080</code> 或 <code>http://armbian.elf-tint.ts.net:8080</code></p>
+</li>
+<li>
+<p>页面加载后，点击 <strong>“登录”</strong> 按钮，输入用户名 <code>admin</code>，密码 <code>nimda</code>。</p>
+</li>
+<li>
+<p>登录成功后即可浏览、上传、下载文件。</p>
+</li>
+</ul>
+<blockquote>
+<p>若规则为 <code>::|admin:nimda:RWD</code>，访问时页面为空，登录后显示文件列表。<br>
+若清除浏览器缓存后登录按钮无反应，请使用无痕模式或重启浏览器。</p>
+</blockquote>
+<hr>
+<h3 id="2-windows-映射网络驱动器">2. Windows 映射网络驱动器<a hidden class="anchor" aria-hidden="true" href="#2-windows-映射网络驱动器">#</a></h3>
+<p><strong>前提</strong>：Windows 默认禁用 HTTP 基本认证，需修改注册表。</p>
+<h4 id="步骤">步骤：<a hidden class="anchor" aria-hidden="true" href="#步骤">#</a></h4>
+<ol>
+<li>
+<p><strong>修改注册表</strong></p>
+<ul>
+<li>
+<p>按 <code>Win+R</code>，输入 <code>regedit</code>，定位到：<br>
+<code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\WebClient\Parameters</code></p>
+</li>
+<li>
+<p>将 <code>BasicAuthLevel</code> 的值改为 <code>2</code>（允许 HTTP 基本认证）。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>重启 WebClient 服务</strong></p>
+<ul>
+<li>按 <code>Win+R</code>，输入 <code>services.msc</code>，找到 <code>WebClient</code>，右键“重新启动”。</li>
+</ul>
+</li>
+<li>
+<p><strong>映射网络驱动器</strong></p>
+<ul>
+<li>
+<p>打开“此电脑” → “映射网络驱动器”。</p>
+</li>
+<li>
+<p>文件夹地址：<code>http://armbian.elf-tint.ts.net:8080/webdav</code>（或使用 IP）。</p>
+</li>
+<li>
+<p>勾选“使用其他凭据连接”，点击完成。</p>
+</li>
+<li>
+<p>输入用户名 <code>admin</code>，密码 <code>nimda</code>，并勾选“记住我的凭据”。</p>
+</li>
+</ul>
+</li>
+</ol>
+<p>完成后，即可在“此电脑”看到新盘符，像本地磁盘一样操作。</p>
+<hr>
+<h3 id="3-android-客户端voyager">3. Android 客户端（Voyager）<a hidden class="anchor" aria-hidden="true" href="#3-android-客户端voyager">#</a></h3>
+<p>在 Voyager 中添加新连接，填写以下信息：</p>
+<table>
+  <thead>
+      <tr>
+          <th>字段</th>
+          <th>填写内容</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>协议</td>
+          <td>WebDAV</td>
+      </tr>
+      <tr>
+          <td>Host</td>
+          <td><code>armbian.elf-tint.ts.net</code> 或 <code>100.126.205.77</code></td>
+      </tr>
+      <tr>
+          <td>Port</td>
+          <td><code>8080</code></td>
+      </tr>
+      <tr>
+          <td>Remote Path</td>
+          <td><code>/webdav</code></td>
+      </tr>
+      <tr>
+          <td>Username</td>
+          <td><code>admin</code></td>
+      </tr>
+      <tr>
+          <td>Password</td>
+          <td><code>nimda</code></td>
+      </tr>
+  </tbody>
+</table>
+<blockquote>
+<p>若 Voyager 不支持单独设置 Remote Path，可将 Host 填为 <code>armbian.elf-tint.ts.net/webdav</code>，端口仍填 <code>8080</code>。</p>
+</blockquote>
+<p><strong>其他推荐客户端</strong>：Solid Explorer、CX 文件管理器。</p>
+<hr>
+<h2 id="八常见问题与解决方案">八、常见问题与解决方案<a hidden class="anchor" aria-hidden="true" href="#八常见问题与解决方案">#</a></h2>
+<table>
+  <thead>
+      <tr>
+          <th>问题现象</th>
+          <th>原因</th>
+          <th>解决方法</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>浏览器访问根路径显示空页面，登录按钮无反应</td>
+          <td>浏览器缓存了旧会话/Cookie</td>
+          <td>清除浏览器缓存和 Cookie，或使用无痕模式</td>
+      </tr>
+      <tr>
+          <td>浏览器访问 <code>/webdav</code> 返回 <code>405 Method Not Allowed</code></td>
+          <td><code>/webdav</code> 是 WebDAV 端点，不支持浏览器 GET 请求</td>
+          <td>这是正常现象，客户端使用 PROPFIND 方法访问即可</td>
+      </tr>
+      <tr>
+          <td>Windows 映射失败，提示“网络错误”</td>
+          <td>未修改注册表或未重启 WebClient 服务</td>
+          <td>按第七节步骤修改注册表并重启服务</td>
+      </tr>
+      <tr>
+          <td>Voyager 连接失败（即使设置了 Remote Path）</td>
+          <td>Voyager 可能忽略 Remote Path 字段</td>
+          <td>将路径合并到 Host 中，如 <code>armbian.elf-tint.ts.net/webdav</code></td>
+      </tr>
+      <tr>
+          <td>升级到 CHFS 3.1 后 <code>--webdav</code> 参数不识别</td>
+          <td>下载的版本不对，或参数格式错误</td>
+          <td>降级回 1.1 版本，稳定可靠</td>
+      </tr>
+      <tr>
+          <td>登录后仍无法上传文件</td>
+          <td>规则中未给用户写入权限</td>
+          <td>确保规则为 <code>admin:nimda:RWD</code>（包含 W 和 D）</td>
+      </tr>
+  </tbody>
+</table>
+<hr>
+<h2 id="九最终确认状态">九、最终确认状态<a hidden class="anchor" aria-hidden="true" href="#九最终确认状态">#</a></h2>
+<ul>
+<li>
+<p>CHFS 1.1 服务正常运行，监听 8080 端口</p>
+</li>
+<li>
+<p>systemd 服务已启用，开机自启</p>
+</li>
+<li>
+<p>浏览器可访问 Web 界面，登录正常</p>
+</li>
+<li>
+<p>Windows 映射网络驱动器成功</p>
+</li>
+<li>
+<p>Android Voyager 正常连接</p>
+</li>
+<li>
+<p>Tailscale 远程访问正常（域名和 IP 均可）</p>
+</li>
+</ul>
+<hr>
+<h2 id="十参考命令速查">十、参考命令速查<a hidden class="anchor" aria-hidden="true" href="#十参考命令速查">#</a></h2>
+<p>bash</p>
+<h1 id="服务管理">服务管理<a hidden class="anchor" aria-hidden="true" href="#服务管理">#</a></h1>
+<p>sudo systemctl start chfs
+sudo systemctl stop chfs
+sudo systemctl restart chfs
+sudo systemctl status chfs</p>
+<h1 id="查看日志">查看日志<a hidden class="anchor" aria-hidden="true" href="#查看日志">#</a></h1>
+<p>sudo journalctl -u chfs -f</p>
+<h1 id="测试-webdavcurl">测试 WebDAV（curl）<a hidden class="anchor" aria-hidden="true" href="#测试-webdavcurl">#</a></h1>
+<p>curl -u admin:nimda -X PROPFIND http://127.0.0.1:8080/webdav -H &ldquo;Depth: 1&rdquo;</p>
+<h1 id="查看版本">查看版本<a hidden class="anchor" aria-hidden="true" href="#查看版本">#</a></h1>
+<p>/usr/local/bin/chfs -version</p>
+<h1 id="查看端口监听">查看端口监听<a hidden class="anchor" aria-hidden="true" href="#查看端口监听">#</a></h1>
+<p>sudo ss -tulpn | grep 8080</p>
+<h1 id="tailscale-信息">Tailscale 信息<a hidden class="anchor" aria-hidden="true" href="#tailscale-信息">#</a></h1>
+<p>tailscale ip
+tailscale status</p>
+<hr>
+<p><strong>文档结束</strong><br>
+记录日期：2026-07-05<br>
+部署者：jiaxf</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer><script src="https://giscus.app/client.js"
+        data-repo="jiaxv/myblog"
+        data-repo-id="R_kgDOSmbZ_w"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOSmbZ_84C9vTG"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+</script>
+
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://blog.jiaxv.top/">我的思维宇宙</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

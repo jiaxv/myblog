@@ -1,1 +1,33 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/"><channel><title>Tags on 我的思维宇宙</title><link>https://blog.jiaxv.top/tags/</link><description>Recent content in Tags on 我的思维宇宙</description><generator>Hugo</generator><language>zh-cn</language><atom:link href="https://blog.jiaxv.top/tags/index.xml" rel="self" type="application/rss+xml"/></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Tags on 我的思维宇宙</title>
+    <link>https://blog.jiaxv.top/tags/</link>
+    <description>Recent content in Tags on 我的思维宇宙</description>
+    <generator>Hugo</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 24 May 2026 23:59:59 +0800</lastBuildDate>
+    <atom:link href="https://blog.jiaxv.top/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hugo</title>
+      <link>https://blog.jiaxv.top/tags/hugo/</link>
+      <pubDate>Sun, 24 May 2026 23:59:59 +0800</pubDate>
+      <guid>https://blog.jiaxv.top/tags/hugo/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>N1</title>
+      <link>https://blog.jiaxv.top/tags/n1/</link>
+      <pubDate>Sun, 24 May 2026 23:59:59 +0800</pubDate>
+      <guid>https://blog.jiaxv.top/tags/n1/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>博客</title>
+      <link>https://blog.jiaxv.top/tags/%E5%8D%9A%E5%AE%A2/</link>
+      <pubDate>Sun, 24 May 2026 23:59:59 +0800</pubDate>
+      <guid>https://blog.jiaxv.top/tags/%E5%8D%9A%E5%AE%A2/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="auto" data-theme="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>为 EdgeOne Pages 静态博客配置 HTTPS | 我的思维宇宙</title>
+<meta name="keywords" content="">
+<meta name="description" content="🔒 为 EdgeOne Pages 静态博客配置 HTTPS
+一、申请并部署免费 SSL 证书
+
+登录 腾讯云 EdgeOne 控制台。
+进入 Pages 服务，选择你的博客项目。
+在左侧导航栏中，点击 “域名管理”。
+找到绑定的自定义域名（如 blog.jiaxv.top），点击该域名右侧的 “HTTPS 配置” 或 “编辑” 按钮。
+在弹出的“边缘 HTTPS 证书”配置页面中：
+
+配置方式：选择 “申请免费证书”。
+验证方式：选择 “自动验证”（推荐，最简单）。
+点击 “保存” 或 “确定”。
+
+
+等待证书自动申请、验证和部署，状态变为“已配置”或“已生效”即可。
+
+
+说明：免费证书由 EdgeOne 自动续签，有效期 90 天，无需手动维护。
+
+
+二、开启“强制 HTTPS 访问”
+在同一个 HTTPS 配置页面中：
+
+找到 “强制 HTTPS 访问” 开关，将其打开。
+保存配置。
+
+此操作会确保所有 HTTP 请求自动跳转到 HTTPS，彻底消除浏览器“不安全”提示。
+
+三、配置 HSTS（HTTP 严格传输安全）
+
+前置条件：SSL 证书已部署成功，且“强制 HTTPS 访问”已开启。
+
+在 HTTPS 配置页面找到 HSTS 相关选项，推荐配置如下：
+
+  
+      
+          选项
+          推荐值
+          说明
+      
+  
+  
+      
+          缓存时间 (max-age)
+          31536000（365 天）
+          浏览器记住“仅 HTTPS 访问”的时间。可先用 300 秒测试，确认无误后再改回长周期。
+      
+      
+          包含子域名
+          开启
+          规则同时应用于所有子域名（如 www.jiaxv.top）。确保所有子域名均已支持 HTTPS 后再开启。
+      
+      
+          预加载 (preload)
+          关闭（暂时）
+          提交到浏览器内置的强制 HTTPS 列表，撤回极难。建议网站长期稳定运行后再考虑开启。
+      
+  
+
+保存配置即可生效。">
+<meta name="author" content="">
+<link rel="canonical" href="https://blog.jiaxv.top/posts/%E4%B8%BA-edgeone-pages-%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E9%85%8D%E7%BD%AE-https/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://blog.jiaxv.top/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://blog.jiaxv.top/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://blog.jiaxv.top/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://blog.jiaxv.top/apple-touch-icon.png">
+<link rel="mask-icon" href="https://blog.jiaxv.top/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh-cn" href="https://blog.jiaxv.top/posts/%E4%B8%BA-edgeone-pages-%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E9%85%8D%E7%BD%AE-https/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+                color-scheme: dark;
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .toc {
+                background: var(--entry);
+            }
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else if (localStorage.getItem("pref-theme") === "light") {
+       document.querySelector("html").dataset.theme = 'light';
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector("html").dataset.theme = 'dark';
+    } else {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><meta property="og:url" content="https://blog.jiaxv.top/posts/%E4%B8%BA-edgeone-pages-%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E9%85%8D%E7%BD%AE-https/">
+  <meta property="og:site_name" content="我的思维宇宙">
+  <meta property="og:title" content="为 EdgeOne Pages 静态博客配置 HTTPS">
+  <meta property="og:description" content="🔒 为 EdgeOne Pages 静态博客配置 HTTPS 一、申请并部署免费 SSL 证书 登录 腾讯云 EdgeOne 控制台。 进入 Pages 服务，选择你的博客项目。 在左侧导航栏中，点击 “域名管理”。 找到绑定的自定义域名（如 blog.jiaxv.top），点击该域名右侧的 “HTTPS 配置” 或 “编辑” 按钮。 在弹出的“边缘 HTTPS 证书”配置页面中： 配置方式：选择 “申请免费证书”。 验证方式：选择 “自动验证”（推荐，最简单）。 点击 “保存” 或 “确定”。 等待证书自动申请、验证和部署，状态变为“已配置”或“已生效”即可。 说明：免费证书由 EdgeOne 自动续签，有效期 90 天，无需手动维护。
+二、开启“强制 HTTPS 访问” 在同一个 HTTPS 配置页面中：
+找到 “强制 HTTPS 访问” 开关，将其打开。 保存配置。 此操作会确保所有 HTTP 请求自动跳转到 HTTPS，彻底消除浏览器“不安全”提示。
+三、配置 HSTS（HTTP 严格传输安全） 前置条件：SSL 证书已部署成功，且“强制 HTTPS 访问”已开启。
+在 HTTPS 配置页面找到 HSTS 相关选项，推荐配置如下：
+选项 推荐值 说明 缓存时间 (max-age) 31536000（365 天） 浏览器记住“仅 HTTPS 访问”的时间。可先用 300 秒测试，确认无误后再改回长周期。 包含子域名 开启 规则同时应用于所有子域名（如 www.jiaxv.top）。确保所有子域名均已支持 HTTPS 后再开启。 预加载 (preload) 关闭（暂时） 提交到浏览器内置的强制 HTTPS 列表，撤回极难。建议网站长期稳定运行后再考虑开启。 保存配置即可生效。">
+  <meta property="og:locale" content="zh_cn">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2026-06-07T00:11:33+08:00">
+    <meta property="article:modified_time" content="2026-06-07T00:11:33+08:00">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="为 EdgeOne Pages 静态博客配置 HTTPS">
+  <meta name="twitter:description" content="🔒 为 EdgeOne Pages 静态博客配置 HTTPS 一、申请并部署免费 SSL 证书 登录 腾讯云 EdgeOne 控制台。 进入 Pages 服务，选择你的博客项目。 在左侧导航栏中，点击 “域名管理”。 找到绑定的自定义域名（如 blog.jiaxv.top），点击该域名右侧的 “HTTPS 配置” 或 “编辑” 按钮。 在弹出的“边缘 HTTPS 证书”配置页面中： 配置方式：选择 “申请免费证书”。 验证方式：选择 “自动验证”（推荐，最简单）。 点击 “保存” 或 “确定”。 等待证书自动申请、验证和部署，状态变为“已配置”或“已生效”即可。 说明：免费证书由 EdgeOne 自动续签，有效期 90 天，无需手动维护。
+二、开启“强制 HTTPS 访问” 在同一个 HTTPS 配置页面中：
+找到 “强制 HTTPS 访问” 开关，将其打开。 保存配置。 此操作会确保所有 HTTP 请求自动跳转到 HTTPS，彻底消除浏览器“不安全”提示。
+三、配置 HSTS（HTTP 严格传输安全） 前置条件：SSL 证书已部署成功，且“强制 HTTPS 访问”已开启。
+在 HTTPS 配置页面找到 HSTS 相关选项，推荐配置如下：
+选项 推荐值 说明 缓存时间 (max-age) 31536000（365 天） 浏览器记住“仅 HTTPS 访问”的时间。可先用 300 秒测试，确认无误后再改回长周期。 包含子域名 开启 规则同时应用于所有子域名（如 www.jiaxv.top）。确保所有子域名均已支持 HTTPS 后再开启。 预加载 (preload) 关闭（暂时） 提交到浏览器内置的强制 HTTPS 列表，撤回极难。建议网站长期稳定运行后再考虑开启。 保存配置即可生效。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://blog.jiaxv.top/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "为 EdgeOne Pages 静态博客配置 HTTPS",
+      "item": "https://blog.jiaxv.top/posts/%E4%B8%BA-edgeone-pages-%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E9%85%8D%E7%BD%AE-https/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "为 EdgeOne Pages 静态博客配置 HTTPS",
+  "name": "为 EdgeOne Pages 静态博客配置 HTTPS",
+  "description": "🔒 为 EdgeOne Pages 静态博客配置 HTTPS 一、申请并部署免费 SSL 证书 登录 腾讯云 EdgeOne 控制台。 进入 Pages 服务，选择你的博客项目。 在左侧导航栏中，点击 “域名管理”。 找到绑定的自定义域名（如 blog.jiaxv.top），点击该域名右侧的 “HTTPS 配置” 或 “编辑” 按钮。 在弹出的“边缘 HTTPS 证书”配置页面中： 配置方式：选择 “申请免费证书”。 验证方式：选择 “自动验证”（推荐，最简单）。 点击 “保存” 或 “确定”。 等待证书自动申请、验证和部署，状态变为“已配置”或“已生效”即可。 说明：免费证书由 EdgeOne 自动续签，有效期 90 天，无需手动维护。\n二、开启“强制 HTTPS 访问” 在同一个 HTTPS 配置页面中：\n找到 “强制 HTTPS 访问” 开关，将其打开。 保存配置。 此操作会确保所有 HTTP 请求自动跳转到 HTTPS，彻底消除浏览器“不安全”提示。\n三、配置 HSTS（HTTP 严格传输安全） 前置条件：SSL 证书已部署成功，且“强制 HTTPS 访问”已开启。\n在 HTTPS 配置页面找到 HSTS 相关选项，推荐配置如下：\n选项 推荐值 说明 缓存时间 (max-age) 31536000（365 天） 浏览器记住“仅 HTTPS 访问”的时间。可先用 300 秒测试，确认无误后再改回长周期。 包含子域名 开启 规则同时应用于所有子域名（如 www.jiaxv.top）。确保所有子域名均已支持 HTTPS 后再开启。 预加载 (preload) 关闭（暂时） 提交到浏览器内置的强制 HTTPS 列表，撤回极难。建议网站长期稳定运行后再考虑开启。 保存配置即可生效。\n",
+  "keywords": [
+    
+  ],
+  "articleBody": "🔒 为 EdgeOne Pages 静态博客配置 HTTPS 一、申请并部署免费 SSL 证书 登录 腾讯云 EdgeOne 控制台。 进入 Pages 服务，选择你的博客项目。 在左侧导航栏中，点击 “域名管理”。 找到绑定的自定义域名（如 blog.jiaxv.top），点击该域名右侧的 “HTTPS 配置” 或 “编辑” 按钮。 在弹出的“边缘 HTTPS 证书”配置页面中： 配置方式：选择 “申请免费证书”。 验证方式：选择 “自动验证”（推荐，最简单）。 点击 “保存” 或 “确定”。 等待证书自动申请、验证和部署，状态变为“已配置”或“已生效”即可。 说明：免费证书由 EdgeOne 自动续签，有效期 90 天，无需手动维护。\n二、开启“强制 HTTPS 访问” 在同一个 HTTPS 配置页面中：\n找到 “强制 HTTPS 访问” 开关，将其打开。 保存配置。 此操作会确保所有 HTTP 请求自动跳转到 HTTPS，彻底消除浏览器“不安全”提示。\n三、配置 HSTS（HTTP 严格传输安全） 前置条件：SSL 证书已部署成功，且“强制 HTTPS 访问”已开启。\n在 HTTPS 配置页面找到 HSTS 相关选项，推荐配置如下：\n选项 推荐值 说明 缓存时间 (max-age) 31536000（365 天） 浏览器记住“仅 HTTPS 访问”的时间。可先用 300 秒测试，确认无误后再改回长周期。 包含子域名 开启 规则同时应用于所有子域名（如 www.jiaxv.top）。确保所有子域名均已支持 HTTPS 后再开启。 预加载 (preload) 关闭（暂时） 提交到浏览器内置的强制 HTTPS 列表，撤回极难。建议网站长期稳定运行后再考虑开启。 保存配置即可生效。\n✅ 生效验证 打开浏览器无痕/隐私窗口。 访问 http://blog.jiaxv.top。 应观察到浏览器地址栏自动跳转为 https://blog.jiaxv.top，并显示安全锁图标。 （可选）打开浏览器开发者工具 → “网络”面板，查看响应头是否包含 Strict-Transport-Security 字段。 💎 小结 EdgeOne 免费证书：自动化申请与续签，零成本。 强制 HTTPS：确保所有访问都加密。 HSTS：进一步提升安全性，防止 SSL 剥离攻击，建议逐步启用并测试稳定后再加长缓存时间。 ",
+  "wordCount" : "116",
+  "inLanguage": "zh-cn",
+  "datePublished": "2026-06-07T00:11:33+08:00",
+  "dateModified": "2026-06-07T00:11:33+08:00",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://blog.jiaxv.top/posts/%E4%B8%BA-edgeone-pages-%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2%E9%85%8D%E7%BD%AE-https/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "我的思维宇宙",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://blog.jiaxv.top/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="https://blog.jiaxv.top/" accesskey="h" title="我的思维宇宙 (Alt + H)">我的思维宇宙</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="https://blog.jiaxv.top/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://blog.jiaxv.top/tags/" title="标签">
+                    <span>标签</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      为 EdgeOne Pages 静态博客配置 HTTPS
+    </h1>
+    <div class="post-meta">
+
+<span title='2026-06-07 00:11:33 +0800 CST'>June 7, 2026</span>
+
+</div>
+  </header> 
+  <div class="post-content md-content"><h2 id="-为-edgeone-pages-静态博客配置-https">🔒 为 EdgeOne Pages 静态博客配置 HTTPS<a hidden class="anchor" aria-hidden="true" href="#-为-edgeone-pages-静态博客配置-https">#</a></h2>
+<h3 id="一申请并部署免费-ssl-证书">一、申请并部署免费 SSL 证书<a hidden class="anchor" aria-hidden="true" href="#一申请并部署免费-ssl-证书">#</a></h3>
+<ol>
+<li>登录 <a href="https://console.cloud.tencent.com/edgeone">腾讯云 EdgeOne 控制台</a>。</li>
+<li>进入 <strong>Pages</strong> 服务，选择你的博客项目。</li>
+<li>在左侧导航栏中，点击 <strong>“域名管理”</strong>。</li>
+<li>找到绑定的自定义域名（如 <code>blog.jiaxv.top</code>），点击该域名右侧的 <strong>“HTTPS 配置”</strong> 或 <strong>“编辑”</strong> 按钮。</li>
+<li>在弹出的“边缘 HTTPS 证书”配置页面中：
+<ul>
+<li><strong>配置方式</strong>：选择 <strong>“申请免费证书”</strong>。</li>
+<li><strong>验证方式</strong>：选择 <strong>“自动验证”</strong>（推荐，最简单）。</li>
+<li>点击 <strong>“保存”</strong> 或 <strong>“确定”</strong>。</li>
+</ul>
+</li>
+<li>等待证书自动申请、验证和部署，状态变为“已配置”或“已生效”即可。</li>
+</ol>
+<blockquote>
+<p><strong>说明</strong>：免费证书由 EdgeOne 自动续签，有效期 90 天，无需手动维护。</p>
+</blockquote>
+<hr>
+<h3 id="二开启强制-https-访问">二、开启“强制 HTTPS 访问”<a hidden class="anchor" aria-hidden="true" href="#二开启强制-https-访问">#</a></h3>
+<p>在同一个 HTTPS 配置页面中：</p>
+<ul>
+<li>找到 <strong>“强制 HTTPS 访问”</strong> 开关，将其打开。</li>
+<li>保存配置。</li>
+</ul>
+<p>此操作会确保所有 HTTP 请求自动跳转到 HTTPS，彻底消除浏览器“不安全”提示。</p>
+<hr>
+<h3 id="三配置-hstshttp-严格传输安全">三、配置 HSTS（HTTP 严格传输安全）<a hidden class="anchor" aria-hidden="true" href="#三配置-hstshttp-严格传输安全">#</a></h3>
+<blockquote>
+<p><strong>前置条件</strong>：SSL 证书已部署成功，且“强制 HTTPS 访问”已开启。</p>
+</blockquote>
+<p>在 HTTPS 配置页面找到 HSTS 相关选项，推荐配置如下：</p>
+<table>
+  <thead>
+      <tr>
+          <th style="text-align: left">选项</th>
+          <th style="text-align: left">推荐值</th>
+          <th style="text-align: left">说明</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td style="text-align: left"><strong>缓存时间 (max-age)</strong></td>
+          <td style="text-align: left"><code>31536000</code>（365 天）</td>
+          <td style="text-align: left">浏览器记住“仅 HTTPS 访问”的时间。可先用 <code>300</code> 秒测试，确认无误后再改回长周期。</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>包含子域名</strong></td>
+          <td style="text-align: left"><strong>开启</strong></td>
+          <td style="text-align: left">规则同时应用于所有子域名（如 <code>www.jiaxv.top</code>）。确保所有子域名均已支持 HTTPS 后再开启。</td>
+      </tr>
+      <tr>
+          <td style="text-align: left"><strong>预加载 (preload)</strong></td>
+          <td style="text-align: left"><strong>关闭</strong>（暂时）</td>
+          <td style="text-align: left">提交到浏览器内置的强制 HTTPS 列表，撤回极难。建议网站长期稳定运行后再考虑开启。</td>
+      </tr>
+  </tbody>
+</table>
+<p>保存配置即可生效。</p>
+<hr>
+<h3 id="-生效验证">✅ 生效验证<a hidden class="anchor" aria-hidden="true" href="#-生效验证">#</a></h3>
+<ol>
+<li>打开浏览器无痕/隐私窗口。</li>
+<li>访问 <code>http://blog.jiaxv.top</code>。</li>
+<li>应观察到浏览器地址栏自动跳转为 <code>https://blog.jiaxv.top</code>，并显示安全锁图标。</li>
+<li>（可选）打开浏览器开发者工具 → “网络”面板，查看响应头是否包含 <code>Strict-Transport-Security</code> 字段。</li>
+</ol>
+<hr>
+<h3 id="-小结">💎 小结<a hidden class="anchor" aria-hidden="true" href="#-小结">#</a></h3>
+<ul>
+<li><strong>EdgeOne 免费证书</strong>：自动化申请与续签，零成本。</li>
+<li><strong>强制 HTTPS</strong>：确保所有访问都加密。</li>
+<li><strong>HSTS</strong>：进一步提升安全性，防止 SSL 剥离攻击，建议逐步启用并测试稳定后再加长缓存时间。</li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer><script src="https://giscus.app/client.js"
+        data-repo="jiaxv/myblog"
+        data-repo-id="R_kgDOSmbZ_w"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOSmbZ_84C9vTG"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="preferred_color_scheme"
+        data-lang="zh-CN"
+        crossorigin="anonymous"
+        async>
+</script>
+
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="https://blog.jiaxv.top/">我的思维宇宙</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
